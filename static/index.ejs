@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ChatApp v0.0.2</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css" /> -->
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <div class="login">
+        <div id="loginWrap" class="wraps">
+            <h1>Login</h1>
+            <form id="loginForm">
+                <div>
+                    <input type="email" id="email" name="email" placeholder="Email" required />
+                </div>
+                <div>
+                    <input type="password" id="password" name="password" placeholder="Password" required />
+                </div>
+                <div>
+                    <input type="submit" value="Login" class="btn btn-primary btn-block btn-large" />
+                </div>
+                <p id="loginMsg"></p>
+                <a href="/users/register" class="btn btn-primary btn-block btn-large">Register</a>
+            </form>
+        </div>
+    </div>
+    <div id="chatWrap" class="wraps">
+        <div id="table2">
+            <p>Online Users</p>
+            <ul id="userList">
+            </ul>
+            <div>
+                <h3>Video Chat</h3>
+                <p>Enter email of a user to initiate video chat</p>
+                <input type="text" id="remoteUser" />
+                <button id="connect">Connect</button>
+            </div>
+        </div>
+    </div>
+    <div id="video-chat" align="center">
+        <h3>Video Chat</h3>
+        <video id="remoteScreen" autoplay style="height:60%;width:50%;margin:10px;">
+				</video>
+        <video id="localScreen" autoplay style="height:20%;width:22%;margin:10px;">
+				</video>
+        <br />
+        <p id="callStatus">Calling...Waiting for the remote user's response.</p>
+        <br />
+        <button id="cancelCall" class="answer red">HangUp or Cancel</button>
+    </div>
+    <div class="callRequest">
+        <h2>You have a call from <span id="caller"></span> . Do you want to accept?</h2>
+        <button class="answer green">Yes</button>
+        <button class="answer red">No</button>
+    </div>
+    <div id="cover"></div>
+    <script type="text/javascript" src="jquerymain.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="socket.management.js"></script>
+    <!-- </div> -->
+</body>
+
+</html>

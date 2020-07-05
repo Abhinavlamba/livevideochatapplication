@@ -1,0 +1,33 @@
+{
+  "name": "video-app",
+  "version": "1.0.0",
+  "description": "A small WebRTC-based video chat application. Developed with Node.js, Express and Socket.IO on server side. Chromium based browsers only supported.",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "express-flash": "0.0.2",
+    "express-session": "^1.17.0",
+    "node-fetch": "^2.6.0",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "pg": "^7.18.2",
+    "socket.io": "^1.2.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "server.js",
+  "devDependencies": {},
+  "keywords": [
+    "webrtc",
+    "video",
+    "chat"
+  ],
+  "author": "Abhinav",
+  "license": "MIT",
+  "engines": {
+    "node": "0.10.x"
+  }
+}
