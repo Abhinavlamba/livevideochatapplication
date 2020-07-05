@@ -15,7 +15,8 @@ app.get('/', function(req, res) {
     res.render(__dirname + '/static/index.ejs');
 });
 const pool = new pg.Pool({
-    connectionString: 'postgres://qiiasxcrgpgser:2d39f0d7f6afcc173a49898c8ca7e75fce3dc0e667b909be7daf2b0d7881c98b@ec2-34-239-241-25.compute-1.amazonaws.com:5432/dabalc6cj7fsc8',
+    // connectionString: 'postgres://qiiasxcrgpgser:2d39f0d7f6afcc173a49898c8ca7e75fce3dc0e667b909be7daf2b0d7881c98b@ec2-34-239-241-25.compute-1.amazonaws.com:5432/dabalc6cj7fsc8',
+    connectionString: '',
     ssl: true
 });
 
