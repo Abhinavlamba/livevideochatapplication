@@ -145,7 +145,7 @@ io.sockets.on('connection', function(socket) {
         for (i = 0; i < presentuser.length; i++) {
             console.log(data + ' ' + presentuser[i])
             if (data == presentuser[i].split('$')[0]) {
-                callback(false);
+                return callback(false);
             }
         }
         if (true) {
