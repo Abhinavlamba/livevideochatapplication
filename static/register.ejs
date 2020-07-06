@@ -10,16 +10,18 @@
 
 <body>
     <div class="login">
+        <h4 id='status'>
+            <% if (typeof message != 'undefined') { %>
+                <%= message %>
+                    <% } %>
+                        <% if (typeof errors != 'undefined') { %>
+                            <% errors.forEach(error => { %>
+                                <br/>
+                                <%= error.message %>
+                                    <% }) %>
+                                        <% } %>
+        </h4>
         <h1>Register</h1>
-        <ul>
-            <% if (typeof errors != 'undefined') { %>
-                <% errors.forEach(error => { %>
-                    <li>
-                        <%= error.message %>
-                    </li>
-                    <% }) %>
-                        <% } %>
-        </ul>
         <form action="/users/register" method="POST">
             <div>
                 <input type="text" id="name" name="name" placeholder="Name" required />

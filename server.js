@@ -86,7 +86,7 @@ app.post("/users/register", async(req, res) => {
     }
 
     if (password.length < 6) {
-        errors.push({ message: "Password must be a least 6 characters long" });
+        errors.push({ message: "Password must be at least 6 characters long" });
     }
 
     if (password !== password2) {
@@ -110,7 +110,7 @@ app.post("/users/register", async(req, res) => {
 
                 if (results.rows.length > 0) {
                     return res.render(__dirname + '/static/register.ejs', {
-                        message: "Email already registered"
+                        message: "Email is already registered"
                     });
                 } else {
                     pool.query(
@@ -139,11 +139,19 @@ io.sockets.on('connection', function(socket) {
     console.log('A user has connected!');
     socket.on('new user', function(data, callback) {
         console.log('user wants to connect as ' + data);
-        if (data in userlist) {
-            callback(false);
-        } else {
+        // console.log(userlist)
+        var presentuser = Object.keys(userlist);
+        console.log(presentuser)
+        for (i = 0; i < presentuser.length; i++) {
+            console.log(data + ' ' + presentuser[i])
+            if (data == presentuser[i].split('$')[0]) {
+                callback(false);
+            }
+        }
+        if (true) {
             callback(true);
             socket.username = data;
+            console.log(users);
             var result = users.filter(function(chain) {
                 return chain.email === data
             })[0];
@@ -158,6 +166,7 @@ io.sockets.on('connection', function(socket) {
         io.sockets.emit('users', Object.keys(userlist));
     }
     socket.on('disconnect', function(data) {
+        console.log('here');
         if (!socket.username)
             return;
         delete userlist[socket.username];

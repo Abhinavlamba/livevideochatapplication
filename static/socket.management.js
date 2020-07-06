@@ -27,13 +27,14 @@ $(document).ready(function() {
                     socket.emit('new user', $newUser, function(data) {
                         // location.href = "/";
                         if (data) {
+                            console.log(data)
                             $chatWrap.slideDown();
                             $loginWrap.slideUp();
                             // $('#title').html('ChatApp v0.0.2 - Welcome, ' + $newUser);
                             $username.val('');
                             // localStream.href = '/users/temp';
                         } else {
-                            $('#loginMsg').html('Sorry! A user by that name already exists. Try some other name.');
+                            alert("You are already logged in from another device.")
                         }
                     });
                 } else {
