@@ -25,10 +25,11 @@ $(document).ready(function() {
                 if ($newUser != '') {
                     $(this).disabled = true;
                     socket.emit('new user', $newUser, function(data) {
+                        // location.href = "/";
                         if (data) {
                             $chatWrap.slideDown();
                             $loginWrap.slideUp();
-                            $('#title').html('ChatApp v0.0.2 - Welcome, ' + $newUser);
+                            // $('#title').html('ChatApp v0.0.2 - Welcome, ' + $newUser);
                             $username.val('');
                             // localStream.href = '/users/temp';
                         } else {
@@ -58,20 +59,31 @@ $(document).ready(function() {
         // console.log(data);
         var listHtml = '';
         $('#userList').html('');
-
+        // $('#userList').append('<br/>').append('<br/>');
+        function handler() { alert('Jai Mata Di'); }
         for (i = 0; i < data.length; i++) {
             console.log(data[i])
-            var userCard =
-                // '<button class="pickup-button " id = ' +
-                //     +"'" + data[i].toString() + "'>" + "Video Call" +
-                //     "</button>" +
-                '<ul>' +
-                '<li>' +
-                data[i] +
-                '</li>'
-            console.log(userCard)
-            $('#userList').append(userCard);
+            var result = data[i].split('$');
+            var email = result[0];
+            var name = result[1];
+            if (self == email) {
+                self = data[i];
+            }
+            var userCard = $('<button class = "pickup-button" > Video Call </button>').attr('id', data[i]);
+
+            // $('#userList').append('<div id = "food-table">');
+            // $('#userList').append(userCard);
+            // $('#userList').append('<ul>');
+            // $('#userList').append('<li>');
+            // $('#userList').append("Name : " + data[i]);
+            // $('#userList').append('</li>');
+            // $('#userList').append('</ul>');
+            // $('#userList').append('</div>');
+            $('#userList').append('<div id="food-table" class = "row"><div class = "column1">Name : ' + name + '</div> <div class = "column">Email : ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
+            // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
         }
+        // for (i = 0; i < data.length; i++) {
+        // }
     });
     socket.on('message', function(data) {
         $('#chatScroll>ul').prepend('<li><b>' + data.name + ': </b>' + data.msg + '</li>');
@@ -133,12 +145,12 @@ $(document).ready(function() {
     }
 
     //code for caller
-    $("#connect").on('click', function() {
-        console.log('Trying to start a call. Current call started status :' + isStarted);
+    $(document).on('click', '#chatWrap #userList #food-table .pickup-button', function() {
         if (!isStarted) {
-            remoteUser = $('#remoteUser').val()
+            // console.log(remoteUser)
+            remoteUser = $(this).attr('id')
             console.log(remoteUser)
-                // console.log(remoteUser)
+            console.log('Trying to start a call. Current call started status :' + isStarted);
             if (remoteUser != '' && remoteUser != self) {
                 console.log('Call request from ' + self + ' to ' + remoteUser);
                 $('#video-chat').slideDown();
@@ -189,16 +201,30 @@ $(document).ready(function() {
             pc.close();
             pc = null;
         }
+        isStarted = false;
         if (remoteStream) {
-            remoteStream.stop();
+            // var stream = remoteStream.remoteVideoElement.srcObject;
+            const tracks = remoteStream.getTracks();
+
+            tracks.forEach(function(track) {
+                track.stop();
+            });
+            // remoteStream.stop();
+            remoteVideoElement.srcObject = null;
         }
         if (localStream) {
-            localStream.stop();
+            // var stream = localStream.localVideoElement.srcObject;
+            const tracks = localStream.getTracks();
+
+            tracks.forEach(function(track) {
+                track.stop();
+            });
+            // localStream.stop();
+            localVideoElement.srcObject = null;
         }
-        isStarted = false;
         remoteUser = '';
         $('#callStatus').html('Call ended!');
-        $('#video-chat').slideUp('slow');
+        $('#video-chat').slideUp();
         $('#cover').fadeOut();
     }
     //Code for answerer!!
@@ -221,7 +247,7 @@ $(document).ready(function() {
         if (!isStarted) {
             $div = $('.callRequest');
             remoteUser = data.from;
-            $div.find('#caller').text(remoteUser);
+            $div.find('#caller').text('Username : ' + remoteUser.split('$')[1] + ' Email : ' + remoteUser.split('$')[0]);
             $div.slideDown();
             $('#cover').fadeIn();
             $div.on('click', '.green', function() {
@@ -257,7 +283,7 @@ $(document).ready(function() {
                 isStarted = false;
                 callback({ response: false, reason: 'rejected' });
                 $div.slideUp();
-                $('#cover').fadeIn();
+                $('#cover').fadeOut();
             });
         } else {
             callback({ response: false, reason: 'busy' });

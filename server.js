@@ -11,22 +11,34 @@ var userlist = {};
 var liveVideoCalls = {};
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/static/'));
-app.get('/', function(req, res) {
-    res.render(__dirname + '/static/index.ejs');
-});
 const pool = new pg.Pool({
     connectionString: 'postgres://qiiasxcrgpgser:2d39f0d7f6afcc173a49898c8ca7e75fce3dc0e667b909be7daf2b0d7881c98b@ec2-34-239-241-25.compute-1.amazonaws.com:5432/dabalc6cj7fsc8',
     ssl: true
 });
 
 const initializePassport = require("./passportConfig");
-
+var users = []
 initializePassport(passport);
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
+app.get('/', function(req, res) {
+    pool.query(
+        `SELECT * FROM users`,
+        (err, results) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(results.rows.length);
+            var p = (results.rows).length;
+            for (var i = 0; i < p; i++) {
+                users.push(results.rows[i]);
+            }
+        });
+    res.render(__dirname + '/static/index.ejs');
+});
 app.post('/users/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
-        console.log(user);
+        console.log(user)
         if (user)
             return res.send(200);
         else
@@ -132,6 +144,11 @@ io.sockets.on('connection', function(socket) {
         } else {
             callback(true);
             socket.username = data;
+            var result = users.filter(function(chain) {
+                return chain.email === data
+            })[0];
+            socket.username += '$' + result.name;
+            // console.log(socket.name);
             userlist[socket.username] = socket;
             updateUserList();
         }

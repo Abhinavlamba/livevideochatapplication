@@ -3,6 +3,7 @@
 
 <head>
     <title>ChatApp v0.0.2</title>
+    <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css" /> -->
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="style.css" rel="stylesheet" type="text/css" />
@@ -21,24 +22,21 @@
                 </div>
                 <div>
                     <input type="submit" value="Login" class="btn btn-primary btn-block btn-large" />
+                    <a href="/users/register" class="btn btn-primary btn-block btn-large">Register</a>
                 </div>
                 <p id="loginMsg"></p>
-                <a href="/users/register" class="btn btn-primary btn-block btn-large">Register</a>
             </form>
         </div>
     </div>
+
     <div id="chatWrap" class="wraps">
-        <div id="table2">
-            <p>Online Users</p>
-            <ul id="userList">
-            </ul>
-            <div>
-                <h3>Video Chat</h3>
-                <p>Enter email of a user to initiate video chat</p>
-                <input type="text" id="remoteUser" />
-                <button id="connect">Connect</button>
-            </div>
+        <div class="column2"> Online Users</div>
+        <br/> <br/>
+        <div id="userList">
         </div>
+    </div>
+    </div>
+    </div>
     </div>
     <div id="video-chat" align="center">
         <h3>Video Chat</h3>
@@ -47,14 +45,17 @@
         <video id="localScreen" autoplay style="height:20%;width:22%;margin:10px;">
 				</video>
         <br />
-        <p id="callStatus">Calling...Waiting for the remote user's response.</p>
-        <br />
-        <button id="cancelCall" class="answer red">HangUp or Cancel</button>
+        <div class="column3">
+            <p id="callStatus">Calling...Waiting for the remote user's response.</p>
+            <br />
+            <button id="cancelCall" class="answer red">HangUp</button>
+        </div>
     </div>
     <div class="callRequest">
-        <h2>You have a call from <span id="caller"></span> . Do you want to accept?</h2>
-        <button class="answer green">Yes</button>
-        <button class="answer red">No</button>
+        <div style="margin: 16px;" class="column1">You have a call from <span id="caller"></span> . Do you want to accept?</div>
+        </br>
+        <button class="answer green">Accept</button>
+        <button class="answer red">Reject</button>
     </div>
     <div id="cover"></div>
     <script type="text/javascript" src="jquerymain.js"></script>
