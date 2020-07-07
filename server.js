@@ -2,6 +2,30 @@ var express = require('express');
 var app = express();
 var pg = require('pg');
 var passport = require("passport");
+const multer = require('multer');
+var profilePicture = new Date().toISOString().replace(/:/g, '-');
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, __dirname + '/uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, profilePicture + file.originalname);
+    }
+});
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: fileFilter
+});
 var http = require('http').createServer(app).listen(process.env.PORT || 3000, function() {
     console.log('Application running on port ' + this.address().port);
 });
@@ -21,6 +45,7 @@ var users = []
 initializePassport(passport);
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
+app.use(express.static(__dirname + '/uploads/'));
 app.get('/', function(req, res) {
     pool.query(
         `SELECT * FROM users`,
@@ -69,7 +94,8 @@ app.post('/users/login', function(req, res, next) {
 app.get("/users/register", (req, res) => {
     res.render(__dirname + '/static/register.ejs');
 });
-app.post("/users/register", async(req, res) => {
+app.post("/users/register", upload.single('profileImage'), async(req, res) => {
+    console.log(req.file);
     let { name, email, password, password2 } = req.body;
 
     let errors = [];
@@ -114,9 +140,9 @@ app.post("/users/register", async(req, res) => {
                     });
                 } else {
                     pool.query(
-                        `INSERT INTO users (name, email, password)
-                        VALUES ($1, $2, $3)
-                        RETURNING id, password`, [name, email, hashedPassword],
+                        `INSERT INTO users (name, email, password, image)
+                        VALUES ($1, $2, $3, $4)
+                        RETURNING id, password`, [name, email, hashedPassword, profilePicture + req.file.originalname],
                         (err, results) => {
                             if (err) {
                                 throw err;
@@ -155,7 +181,7 @@ io.sockets.on('connection', function(socket) {
             var result = users.filter(function(chain) {
                 return chain.email === data
             })[0];
-            socket.username += '$' + result.name;
+            socket.username += '$' + result.name + '$' + result.image;
             // console.log(socket.name);
             userlist[socket.username] = socket;
             updateUserList();

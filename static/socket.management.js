@@ -8,6 +8,8 @@ $(document).ready(function() {
     var $username = $('#email');
     var $password = $('#password');
     var $chatScoll = $('#chatScroll').find('ul');
+    var $name = $('#personName');
+    var $image = $('#personImage');
     var self;
     $loginForm.on('submit', function(e) {
         e.preventDefault();
@@ -59,7 +61,9 @@ $(document).ready(function() {
     socket.on('users', function(data) {
         // console.log(data);
         var listHtml = '';
+        var image;
         $('#userList').html('');
+        ($name).html('');
         // $('#userList').append('<br/>').append('<br/>');
         function handler() { alert('Jai Mata Di'); }
         for (i = 0; i < data.length; i++) {
@@ -67,8 +71,10 @@ $(document).ready(function() {
             var result = data[i].split('$');
             var email = result[0];
             var name = result[1];
-            if (self == email) {
+            var profile = result[2];
+            if (self == email || self == data[i]) {
                 self = data[i];
+                image = profile;
             }
             var userCard = $('<button class = "pickup-button" > Video Call </button>').attr('id', data[i]);
 
@@ -80,9 +86,11 @@ $(document).ready(function() {
             // $('#userList').append('</li>');
             // $('#userList').append('</ul>');
             // $('#userList').append('</div>');
-            $('#userList').append('<div id="food-table" class = "row"><div class = "column1">Name : ' + name + '</div> <div class = "column">Email : ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
+            $('#userList').append('<div id="food-table" class = "row"><div><img src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
             // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
         }
+        console.log(image);
+        ($name).append('<img src = "./' + image + '" class = "user">');
         // for (i = 0; i < data.length; i++) {
         // }
     });

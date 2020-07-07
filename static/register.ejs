@@ -22,7 +22,7 @@
                                         <% } %>
         </h4>
         <h1>Register</h1>
-        <form action="/users/register" method="POST">
+        <form action="/users/register" enctype='multipart/form-data' method="POST">
             <div>
                 <input type="text" id="name" name="name" placeholder="Name" required />
             </div>
@@ -34,6 +34,9 @@
             </div>
             <div>
                 <input type="password" id="password2" name="password2" placeholder="Confirm Password" required />
+            </div>
+            <div>
+                <input type="file" id="profileImage" name="profileImage" required/>
             </div>
             <div>
                 <input type="submit" value="Register" class="btn btn-primary btn-block btn-large" />

@@ -339,7 +339,7 @@ p {
 
 .column1 {
     float: left;
-    width: 33.33%;
+    width: 30.63%;
     padding: 5px;
     box-sizing: border-box;
     font-size: 15px;
@@ -628,7 +628,27 @@ a {
 }
 
 
-/* #loginWrap h3,
-#chatWrap h3 {
-    margin-top: 100px;
+/* #chatWrap {
+    overflow: scroll;
 } */
+
+.user {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.image2 {
+    float: left;
+    width: 2.70%;
+}
+
+.topcorner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 10px;
+    margin-right: 15px;
+}
