@@ -10,7 +10,17 @@ $(document).ready(function() {
     var $chatScoll = $('#chatScroll').find('ul');
     var $name = $('#personName');
     var $image = $('#personImage');
+    var $profile = $('#profile4');
+    var $cross = $('#cross');
+    var $list = $("#list");
+    var $listWrap = $("#listWrap");
     var self;
+    var friend = [];
+    var buissnes = [];
+    var relative = [];
+    var listfriend = [];
+    var listbuissness = [];
+    var listrelatives = [];
     $loginForm.on('submit', function(e) {
         e.preventDefault();
         $.ajax({
@@ -21,6 +31,18 @@ $(document).ready(function() {
                 password: $password.val()
             },
             success: function(result) {
+                console.log(result)
+                var json = JSON.parse(result);
+                for (var i = 0; i < json.friends.length; i++) {
+                    friend.push(json.friends[i]);
+                }
+                for (var i = 0; i < json.buissness.length; i++) {
+                    buissnes.push(json.buissness[i]);
+                }
+                for (var i = 0; i < json.relatives.length; i++) {
+                    relative.push(json.relatives[i]);
+                }
+
                 $newUser = $username.val();
                 self = $newUser;
                 console.log('want to connect as ' + $newUser);
@@ -29,9 +51,10 @@ $(document).ready(function() {
                     socket.emit('new user', $newUser, function(data) {
                         // location.href = "/";
                         if (data) {
-                            console.log(data)
+                            // console.log(data)
                             $chatWrap.slideDown();
                             $loginWrap.slideUp();
+                            $listWrap.slideUp();
                             // $('#title').html('ChatApp v0.0.2 - Welcome, ' + $newUser);
                             $username.val('');
                             // localStream.href = '/users/temp';
@@ -59,15 +82,18 @@ $(document).ready(function() {
     //     $('#message').val('');
     // });
     socket.on('users', function(data) {
-        // console.log(data);
+        console.log(data);
+        listfriend = [];
+        listbuissness = [];
+        listrelatives = [];
         var listHtml = '';
         var image;
         $('#userList').html('');
-        ($name).html('');
+        // ($name).html('');
         // $('#userList').append('<br/>').append('<br/>');
         function handler() { alert('Jai Mata Di'); }
         for (i = 0; i < data.length; i++) {
-            console.log(data[i])
+            // console.log(data[i])
             var result = data[i].split('$');
             var email = result[0];
             var name = result[1];
@@ -75,6 +101,11 @@ $(document).ready(function() {
             if (self == email || self == data[i]) {
                 self = data[i];
                 image = profile;
+                var name4 = name;
+                name4 = name4.replace(/-/g, ' ');
+                $("#username").text(name4);
+                $("#useremail").text(email);
+                $("#userimage").attr('src', '/' + profile);
             }
             var userCard = $('<button class = "pickup-button" > Video Call </button>').attr('id', data[i]);
 
@@ -86,18 +117,132 @@ $(document).ready(function() {
             // $('#userList').append('</li>');
             // $('#userList').append('</ul>');
             // $('#userList').append('</div>');
-            $('#userList').append('<div id="food-table" class = "row"><div><img src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
+            var name2 = name;
+            name2 = name2.replace(/-/g, ' ');
+            $('#userList').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
             // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
+
         }
-        console.log(image);
-        ($name).append('<img src = "./' + image + '" class = "user">');
+        // console.log(image);
+        // ($name).html('Profile');
         // for (i = 0; i < data.length; i++) {
         // }
+        for (var i = 0; i < data.length; i++) {
+            for (var j = 0; j < friend.length; j++) {
+                if (friend[j].user_id == self && friend[j].friend_id == data[i]) {
+                    listfriend.push(friend[j].friend_id);
+                }
+            }
+            for (var j = 0; j < buissnes.length; j++) {
+                if (buissnes[j].user_id == self && buissnes[j].colleague_id == data[i]) {
+                    listbuissness.push(buissnes[j].colleague_id);
+                }
+            }
+            for (var j = 0; j < relative.length; j++) {
+                if (relative[j].user_id == self && relative[j].relative_id == data[i]) {
+                    listrelatives.push(relative[j].relative_id);
+                }
+            }
+        }
     });
     socket.on('message', function(data) {
         $('#chatScroll>ul').prepend('<li><b>' + data.name + ': </b>' + data.msg + '</li>');
     });
-    //CODE FOR WEBRTC AND VIDEO CHAT STARTS HERE....
+    $("#list").on('click', function(e) {
+        // e.preventDefault();
+        $listWrap.slideDown();
+        $("#cover").fadeIn();
+    });
+    $("#listclose").on('click', function(e) {
+        // $chatWrap.slideDown();
+        $listWrap.slideUp();
+        $("#cover").fadeOut();
+    })
+    $(document).on('click', "#listWrap #food-table .clicklist", function(e) {
+        e.preventDefault();
+        console.log('click');
+        var data;
+        var select = $(this).attr('id');
+        if (select == 'friendslist')
+            data = listfriend;
+        else if (select == 'buissnesslist')
+            data = listbuissness;
+        else
+            data = listrelatives;
+        $("#contacts").html("");
+        for (i = 0; i < data.length; i++) {
+            // console.log(data[i])
+            var result = data[i].split('$');
+            var email = result[0];
+            var name = result[1];
+            var profile = result[2];
+            if (self == email || self == data[i]) {
+                self = data[i];
+                image = profile;
+                var name4 = name;
+                name4 = name4.replace(/-/g, ' ');
+                $("#username").text(name4);
+                $("#useremail").text(email);
+                $("#userimage").attr('src', '/' + profile);
+            }
+            var userCard = $('<button class = "pickup-button" > Video Call </button>').attr('id', data[i]);
+
+            // $('#userList').append('<div id = "food-table">');
+            // $('#userList').append(userCard);
+            // $('#userList').append('<ul>');
+            // $('#userList').append('<li>');
+            // $('#userList').append("Name : " + data[i]);
+            // $('#userList').append('</li>');
+            // $('#userList').append('</ul>');
+            // $('#userList').append('</div>');
+            var name2 = name;
+            name2 = name2.replace(/-/g, ' ');
+            $('#contacts').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
+            // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
+
+        }
+    })
+    $("#contactform").on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "/users/addcontact",
+            data: {
+                name: $("#contactname").val(),
+                email: $("#contactemail").val(),
+                type: $("#type").val(),
+                id: self
+            },
+            success: function(result) {
+                console.log(result)
+                var json = JSON.parse(result);
+                var type = $("#type").val();
+                var id = json.id;
+                console.log({ user_id: self, friend_id: id });
+                if (type == 'friend') {
+                    friend.push({ user_id: self, friend_id: id });
+                } else if (type == 'buissness') {
+                    buissnes.push({ user_id: self, colleague_id: id });
+                } else {
+                    relative.push({ user_id: self, relative_id: id });
+                }
+                $("#contactform").slideUp();
+                $("#cover").fadeOut();
+            },
+            error: function(result) {
+                alert('ALready added or does not exits');
+            }
+        });
+    })
+    $("#add").on('click', function(e) {
+        $("#addcontact").slideDown();
+        $("#cover").fadeIn();
+    })
+    $("#addclose").on('click', function(e) {
+            $("#addcontact").slideUp();
+            $("#cover").fadeOut();
+        })
+        //CODE FOR WEBRTC AND VIDEO CHAT STARTS HERE....
 
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     var localVideoElement = document.getElementById('localScreen');
@@ -152,9 +297,40 @@ $(document).ready(function() {
     function errorCallback(e) {
         alert('Something wrong happened:' + e.toString());
     }
-
+    $(document).on('click', "#personName", function(e) {
+        $profile.slideDown();
+        $("cover").fadeIn();
+    });
+    ($cross).on('click', function(e) {
+        $profile.slideUp();
+        $("cover").fadeOut();
+    });
+    $("#update").on('click', function(e) {
+        console.log(self)
+        $.ajax({
+            type: "POST",
+            url: "/profile",
+            data: {
+                email: (self.split('$')[0])
+            },
+            success: function(result) {
+                $("#prev").val(self.split('$')[0]);
+                $("#updateprofile").slideDown();
+                $profile.slideUp();
+                $("#cover").fadeIn();
+            },
+            error: function(result) {
+                alert('Incorrect Details');
+            }
+        });
+    });
+    $("#cancel").on('click', function(e) {
+        $("#updateprofile").slideUp();
+        $("#cover").fadeOut();
+    });
     //code for caller
-    $(document).on('click', '#chatWrap #userList #food-table .pickup-button', function() {
+    $(document).on('click', '#chatWrap #userList #food-table .pickup-button, #listWrap #contacts .pickup-button', function(e) {
+        e.preventDefault();
         if (!isStarted) {
             // console.log(remoteUser)
             remoteUser = $(this).attr('id')

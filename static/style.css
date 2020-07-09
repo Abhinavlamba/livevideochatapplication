@@ -374,6 +374,15 @@ p {
     color: #FFF;
 }
 
+.profiletext {
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 15px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    color: #FFF;
+}
+
 
 /* Clear floats after the columns */
 
@@ -447,6 +456,18 @@ li {
     height: 100%;
 }
 
+centerdiv {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
 #chatWrap>div {
     /* float: left; */
     width: 100%;
@@ -478,6 +499,21 @@ video {
 
 .callRequest,
 #video-chat {
+    z-index: 5;
+    position: fixed;
+    top: 20px;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: none;
+    background: #171616;
+    border-radius: 16px;
+}
+
+#profile4,
+#updateprofile,
+#listWrap,
+#addcontact {
     z-index: 5;
     position: fixed;
     top: 20px;
@@ -640,6 +676,23 @@ a {
     object-fit: cover;
 }
 
+.profile {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-top: 16px;
+    object-fit: cover;
+}
+
+.parent {
+    text-align: center;
+}
+
+.center {
+    margin: auto;
+}
+
 .image2 {
     float: left;
     width: 2.70%;
@@ -651,4 +704,57 @@ a {
     right: 0;
     margin-top: 10px;
     margin-right: 15px;
+    color: white;
+}
+
+.topcorner1 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20px;
+    margin-right: 20px;
+    cursor: pointer;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.topcorner3 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20px;
+    margin-right: 75px;
+    cursor: pointer;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.clicklist {}
+
+.topcorner4 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20px;
+    margin-right: 125px;
+    cursor: pointer;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 1px;
+}
+
+
+/* margin-top: 16px;
+margin-left: 40px; */
+
+.topcorner2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 16px;
+    margin-right: 16px;
+    height: 16px;
+    width: 16px;
 }

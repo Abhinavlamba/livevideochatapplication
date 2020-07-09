@@ -28,16 +28,91 @@
             </form>
         </div>
     </div>
-    <div class="topcorner" id="personName"></div>
+    <div>
+        <div id="addcontact" class="wraps">
+            <h2 style="color: white;" class="center">Add Contact</h2>
+            <div class="topcorner2"><img src="../cross.png" id="addclose" style="height: 16px;width: 16px; -webkit-filter: invert(100%); filter: invert(100%);"></div>
+            <form id="contactform" style="width: 30%;" class="center">
+                <div>
+                    <input type="text" id="contactname" name="contactname" placeholder="Name" required />
+                </div>
+                <div>
+                    <input type="email" id="contactemail" name="contactemail" placeholder="Email" required />
+                </div>
+                <div>
+                    <input type="text" id="type" name="type" placeholder="Category" required />
+                </div>
+                <div>
+                    <input type="submit" value="Add" class="btn btn-primary btn-block btn-large" />
+                </div>
+            </form>
+        </div>
+
+    </div>
     <div id="chatWrap" class="wraps">
+        <h2 class="topcorner1" id="personName">Profile</h2>
+        <h2 id="list" class="topcorner3"> List </h2>
+        <h2 id="add" class="topcorner4"> Add </h2>
         <div class="column2" style="margin-top: 5px;"> Online Users</div>
         <div id="personImage"></div>
         <br/> <br/>
         <div id="userList">
         </div>
     </div>
+    <div id="listWrap" class="wraps parent">
+        <div class="column2" style="margin-top: 5px;"> Personal Contacts</div>
+        <div id="food-table" class="row">
+            <div class="column1 clicklist" id="buissnesslist">Buissness</div>
+            <div class="column clicklist" id="relativeslist">Relatives</div>
+            <div class="column clicklist" id="friendslist">Friends</div>
+            <div class="topcorner2"><img src="../cross.png" id="listclose" style="height: 16px;width: 16px; -webkit-filter: invert(100%); filter: invert(100%);"></div>
+        </div>
+        <div id="contacts">
+        </div>
     </div>
     </div>
+    <!-- <div class="topcorner2" id="list"><img src="../cross.png"></div> -->
+    <!-- <div id="listWrap" class="wraps parent">
+        <div class="topcorner2"><img src="../cross.png" id="listclose" style="height: 16px;width: 16px; -webkit-filter: invert(100%); filter: invert(100%);"></div>
+    </div> -->
+    <div id="profile4" class="wraps parent">
+        <div class="topcorner2"><img src="../cross.png" id="cross" style="height: 16px;width: 16px; -webkit-filter: invert(100%); filter: invert(100%);"></div>
+        <div class="center">
+            <img id="userimage" class="profile">
+        </div>
+        <br/>
+        <div id="username" class="center profiletext">
+        </div>
+        <div id="useremail" class="center profiletext">
+        </div>
+        <div id="update" class="center profiletext">Update Profile</div>
+    </div>
+    <div id="updateprofile" class="wraps parent">
+        <h1 style="color: white;">Profile</h1>
+        <form action="/users/update" enctype='multipart/form-data' method="POST" style="width: 30%;" class="center">
+            <div>
+                <input type="text" id="name" name="name" placeholder="Name" required />
+            </div>
+            <div>
+                <input type="email" id="email" name="email" placeholder="Email" required />
+            </div>
+            <div>
+                <input type="password" id="password" name="password" placeholder="Password" required />
+            </div>
+            <div>
+                <input type="password" id="password2" name="password2" placeholder="Confirm Password" required />
+            </div>
+            <input type="hidden" id="prev" name="prev" value="prev" />
+            <div>
+                <input type="file" id="profileImage" name="profileImage" required/>
+            </div>
+            <div>
+                <input type="submit" value="Update Profile" class="btn btn-primary btn-block btn-large" />
+            </div>
+        </form>
+        <div style="width: 30%;" class="center">
+            <button id="cancel" class="btn btn-primary btn-block btn-large"> Cancel </button>
+        </div>
     </div>
     <div id="video-chat" align="center">
         <h3>Video Chat</h3>
