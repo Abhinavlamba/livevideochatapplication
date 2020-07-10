@@ -21,6 +21,8 @@ $(document).ready(function() {
     var listfriend = [];
     var listbuissness = [];
     var listrelatives = [];
+    var onlineusers = [];
+    var usertype = "buissness";
     $loginForm.on('submit', function(e) {
         e.preventDefault();
         $.ajax({
@@ -86,6 +88,7 @@ $(document).ready(function() {
         listfriend = [];
         listbuissness = [];
         listrelatives = [];
+        onlineusers = [];
         var listHtml = '';
         var image;
         $('#userList').html('');
@@ -94,6 +97,8 @@ $(document).ready(function() {
         function handler() { alert('Jai Mata Di'); }
         for (i = 0; i < data.length; i++) {
             // console.log(data[i])
+            var json = { id: data[i] };
+            onlineusers.push(json);
             var result = data[i].split('$');
             var email = result[0];
             var name = result[1];
@@ -150,6 +155,7 @@ $(document).ready(function() {
     });
     $("#list").on('click', function(e) {
         // e.preventDefault();
+        $("#buissnesslist").click();
         $listWrap.slideDown();
         $("#cover").fadeIn();
     });
@@ -163,12 +169,25 @@ $(document).ready(function() {
         console.log('click');
         var data;
         var select = $(this).attr('id');
-        if (select == 'friendslist')
+        if (select == 'friendslist') {
             data = listfriend;
-        else if (select == 'buissnesslist')
+            usertype = 'friend';
+            $("#buissnessline").hide();
+            $("#relativeline").hide();
+            $("#friendline").show();
+        } else if (select == 'buissnesslist') {
             data = listbuissness;
-        else
+            usertype = 'buissness';
+            $("#buissnessline").show();
+            $("#relativeline").hide();
+            $("#friendline").hide();
+        } else {
             data = listrelatives;
+            usertype = 'relative';
+            $("#buissnessline").hide();
+            $("#relativeline").show();
+            $("#friendline").hide();
+        }
         $("#contacts").html("");
         for (i = 0; i < data.length; i++) {
             // console.log(data[i])
@@ -197,10 +216,52 @@ $(document).ready(function() {
             // $('#userList').append('</div>');
             var name2 = name;
             name2 = name2.replace(/-/g, ' ');
-            $('#contacts').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
+            $('#contacts').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button><div class="topcorner2"><img src = "../cross.png" class = "crossuser" id = "' + data[i] + '$' + usertype + '" style="height: 8px;width: 8px; -webkit-filter: invert(100%); filter: invert(100%);"></div></div></div>');
             // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
-
         }
+    })
+
+    $(document).on('click', '#listWrap #contacts .crossuser', function(e) {
+        // e.preventDefault();
+        console.log('click');
+        var id2 = $(this).attr('id');
+        console.log(id2);
+        var friend_id = id2.split('$');
+        console.log(friend_id);
+        var id = friend_id[0] + '$' + friend_id[1] + '$' + friend_id[2];
+        console.log(id + ' ' + usertype);
+        $.ajax({
+            type: "POST",
+            url: "/users/remove",
+            data: {
+                user_id: self,
+                id: id,
+                type: usertype
+            },
+            success: function(result) {
+                console.log(result)
+                if (usertype == 'friend') {
+                    var json = { user_id: self, friend_id: id };
+                    listfriend = listfriend.filter(e => e !== id);
+                    friend = friend.filter(e => e != json);
+                    $("#friendslist").click();
+                } else if (usertype == 'buissness') {
+                    var json = { user_id: self, colleague_id: id };
+                    listbuissness = listbuissness.filter(e => e !== id);
+                    buissnes = buissnes.filter(e => e !== json);
+                    $("#buissnesslist").click();
+                } else {
+                    var json = { user_id: self, relative_id: id };
+                    listrelatives = listrelatives.filter(e => e !== id);
+                    relative = relative.filter(e => e !== json);
+                    $("#relativeslist").click();
+                }
+
+            },
+            error: function(result) {
+                alert('ALready added or does not exits');
+            }
+        });
     })
     $("#contactform").on('submit', function(e) {
         e.preventDefault();
@@ -226,7 +287,18 @@ $(document).ready(function() {
                 } else {
                     relative.push({ user_id: self, relative_id: id });
                 }
-                $("#contactform").slideUp();
+                for (var i = 0; i < onlineusers.length; i++) {
+                    var id2 = onlineusers[i].id;
+                    if (id2 == id) {
+                        if (type == 'friend')
+                            listfriend.push(onlineusers[i].id);
+                        else if (type == 'buissness')
+                            listbuissness.push(onlineusers[i].id);
+                        else
+                            listrelatives.push(onlineusers[i].id);
+                    }
+                }
+                $("#addcontact").slideUp();
                 $("#cover").fadeOut();
             },
             error: function(result) {
@@ -307,6 +379,7 @@ $(document).ready(function() {
     });
     $("#update").on('click', function(e) {
         console.log(self)
+            // $("")
         $.ajax({
             type: "POST",
             url: "/profile",
@@ -314,7 +387,9 @@ $(document).ready(function() {
                 email: (self.split('$')[0])
             },
             success: function(result) {
-                $("#prev").val(self.split('$')[0]);
+                $("#prevemail").val(self.split('$')[0]);
+                $("#prevname").val(self.split('$')[1]);
+                $("#previmage").val(self.split('$')[2]);
                 $("#updateprofile").slideDown();
                 $profile.slideUp();
                 $("#cover").fadeIn();

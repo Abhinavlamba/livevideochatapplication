@@ -206,36 +206,94 @@ app.post("/profile", function(req, res) {
     return res.send(200);
 })
 app.post("/users/update", upload.single('profileImage'), async function(req, res) {
-        var { name, password, email, prev } = req.body;
-        console.log(prev);
-        name = name.replace(/ /g, '-');
-        console.log(req.body);
-        console.log(name);
-        hashedPassword2 = await bcrypt.hash(password, 10);
-        console.log(hashedPassword2);
-        pool.query(
-            `SELECT * FROM users WHERE email = ($1)`, [email], (err, results) => {
-                if (err) {
-                    throw err;
-                }
-                console.log(results.rows);
-                if (results.rows.length == 1) {
-                    if (prev != email)
-                        return res.send(400);
-                }
-                pool.query(
-                    `UPDATE users SET name = ($1), email = ($2), password = ($3), image = ($4)
-                WHERE email = ($5)`, [name, email, hashedPassword2, profilePicture + req.file.originalname, prev],
-                    (err, results2) => {
-                        if (err) {
-                            throw err;
-                        }
-                        console.log(results2.rows);
-                        return res.redirect('/');
-                    }
-                );
+    var { name, password, email, prevemail, prevname, previmage } = req.body;
+    // console.log(prev);
+    name = name.replace(/ /g, '-');
+    console.log(req.body);
+    console.log(name);
+    hashedPassword2 = await bcrypt.hash(password, 10);
+    console.log(hashedPassword2);
+    pool.query(
+        `SELECT * FROM users WHERE email = ($1)`, [email], (err, results) => {
+            if (err) {
+                throw err;
             }
-        )
+            console.log(results.rows);
+            if (results.rows.length == 1) {
+                console.log(prevemail + ' ' + email);
+                if (prevemail != email)
+                    return res.send(400);
+            }
+            pool.query(
+                `UPDATE users SET name = ($1), email = ($2), password = ($3), image = ($4)
+                WHERE email = ($5)`, [name, email, hashedPassword2, profilePicture + req.file.originalname, prevemail],
+                (err, results2) => {
+                    if (err) {
+                        throw err;
+                    }
+                    console.log(results2.rows);
+                    var id1 = prevemail + '$' + prevname + '$' + previmage;
+                    var id2 = email + '$' + name + '$' + profilePicture + req.file.originalname;
+                    pool.query(`UPDATE friends SET user_id=$1 WHERE user_id = $2`, [id2, id1], (err, results) => {
+                            if (err)
+                                res.send(400);
+                            pool.query(`UPDATE friends SET friend_id=$1 WHERE friend_id=$2`, [id2, id1], (err, results) => {
+                                if (err)
+                                    res.send(400);
+                                pool.query(`UPDATE buissness SET user_id = $1 WHERE user_id = $2`, [id2, id1], (err, results) => {
+                                    if (err)
+                                        res.send(400);
+                                    pool.query(`UPDATE buissness SET colleague_id = $1 WHERE colleague_id = $2`, [id2, id1], (err, results) => {
+                                        if (err)
+                                            res.send(400);
+                                        pool.query(`UPDATE relatives SET user_id = $1 WHERE user_id = $2`, [id2, id1], (err, results) => {
+                                            if (err)
+                                                res.send(400);
+                                            pool.query(`UPDATE relatives SET relative_id=$1 WHERE relative_id=$2`, [id2, id1], (err, results) => {
+                                                if (err)
+                                                    res.send(400);
+                                                return res.redirect('/');
+                                            })
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                        // return res.redirect('/');
+                }
+            );
+        }
+    )
+})
+app.post('/users/remove', function(req, res) {
+        var usertype = req.body.type;
+        console.log(usertype);
+        if (usertype == 'friend') {
+            var user_id = req.body.user_id;
+            var friend_id = req.body.id;
+            pool.query(`DELETE FROM friends WHERE user_id = $1 AND friend_id = $2`, [user_id, friend_id], (err, results) => {
+                if (err)
+                    return res.send(400);
+                return res.send(200);
+            })
+        } else if (usertype == 'buissness') {
+            var user_id = req.body.user_id;
+            var colleague_id = req.body.id;
+            console.log(user_id + ' ' + colleague_id);
+            pool.query(`DELETE FROM buissness WHERE user_id = $1 AND colleague_id = $2`, [user_id, colleague_id], (err, results) => {
+                if (err)
+                    return res.send(400);
+                return res.send(200);
+            })
+        } else {
+            var user_id = req.body.user_id;
+            var relative_id = req.body.id;
+            pool.query(`DELETE FROM relatives WHERE user_id = $1 AND relative_id = $2`, [user_id, relative_id], (err, results) => {
+                if (err)
+                    return res.send(400);
+                return res.send(200);
+            })
+        }
     })
     // app.post('/users/profile', function(req, res) {
     //     result = req.body.profiledata.split('$');

@@ -154,7 +154,8 @@ h4 {
     font-weight: bold;
 }
 
-input {
+input,
+select {
     width: 100%;
     margin-bottom: 10px;
     background: rgba(0, 0, 0, 0.3);
@@ -587,6 +588,24 @@ video {
     align-content: center;
 }
 
+.crossuser {}
+
+.wraps2 {
+    /* margin-top: 10px; */
+    padding-bottom: 10px;
+    background: #171616;
+    height: 40%;
+    width: 20%;
+}
+
+.wraps1 {
+    /* margin-top: 10px; */
+    padding-bottom: 10px;
+    background: #171616;
+    height: 70%;
+    width: 30%;
+}
+
 body {
     background: #000;
 }
@@ -693,6 +712,11 @@ a {
     margin: auto;
 }
 
+.center2 {
+    margin: auto;
+    margin-top: 30px;
+}
+
 .image2 {
     float: left;
     width: 2.70%;
@@ -724,7 +748,7 @@ a {
     top: 0;
     right: 0;
     margin-top: 20px;
-    margin-right: 75px;
+    margin-right: 82px;
     cursor: pointer;
     font-size: 15px;
     color: white;
@@ -733,12 +757,41 @@ a {
 
 .clicklist {}
 
+.topcorner6 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-right: 125px;
+    margin-top: 10px;
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.topcorner8 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-right: 20px;
+    margin-top: 10px;
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 1px;
+}
+
 .topcorner4 {
     position: absolute;
     top: 0;
     right: 0;
+    left: auto;
     margin-top: 20px;
     margin-right: 125px;
+    /* margin-left: auto;
+    margin-right: 0; */
     cursor: pointer;
     font-size: 15px;
     color: white;
