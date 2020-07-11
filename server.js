@@ -63,44 +63,32 @@ app.get('/', function(req, res) {
                 users.push(results.rows[i]);
             }
         });
+    // io.sockets.emit('update user', users);
     res.render(__dirname + '/static/index.ejs');
 });
 var prev;
 app.post('/users/login', function(req, res, next) {
-    passport.authenticate('local', async function(err, user, info) {
+    passport.authenticate('local', function(err, user, info) {
         // console.log(user)
         if (user) {
             var json = {
-                'friends': [],
-                'buissness': [],
-                'relatives': []
+                'relations': [],
+                'users': []
             };
-            pool.query(`SELECT * FROM friends`, function(err, results) {
+            pool.query(`SELECT * FROM relations`, function(err, results) {
                 if (err)
                     return res.send(400);
-                console.log(results.rows);
+                console.log(results.rows + '1');
                 for (var i = 0; i < results.rows.length; i++) {
-                    (json.friends).push(results.rows[i]);
+                    (json.relations).push(results.rows[i]);
                 }
-                pool.query(`SELECT * FROM buissness`, function(err, results2) {
-                    if (err)
-                        return res.send(400);
-                    console.log(results2.rows);
-                    for (var i = 0; i < results2.rows.length; i++) {
-                        (json.buissness).push(results2.rows[i]);
-                    }
-                    pool.query(`SELECT * FROM relatives`, function(err, results3) {
-                        if (err)
-                            return res.send(400);
-                        console.log(results3.rows);
-                        for (var i = 0; i < results3.rows.length; i++) {
-                            (json.relatives).push(results3.rows[i]);
-                        }
+                for (var i = 0; i < users.length; i++) {
+                    json.users.push(users[i]);
+                }
 
-                        var result = JSON.stringify(json);
-                        return res.send(result);
-                    })
-                })
+                var result = JSON.stringify(json);
+                // console.log(result);
+                return res.send(result);
             })
         } else {
             return res.send(400);
@@ -206,8 +194,9 @@ app.post("/profile", function(req, res) {
     return res.send(200);
 })
 app.post("/users/update", upload.single('profileImage'), async function(req, res) {
-    var { name, password, email, prevemail, prevname, previmage } = req.body;
-    // console.log(prev);
+    var { name, password, email, prevemail, prevname, previmage, previd } = req.body;
+    console.log(req.body.prevemail);
+    console.log(req.file);
     name = name.replace(/ /g, '-');
     console.log(req.body);
     console.log(name);
@@ -232,68 +221,57 @@ app.post("/users/update", upload.single('profileImage'), async function(req, res
                         throw err;
                     }
                     console.log(results2.rows);
-                    var id1 = prevemail + '$' + prevname + '$' + previmage;
-                    var id2 = email + '$' + name + '$' + profilePicture + req.file.originalname;
-                    pool.query(`UPDATE friends SET user_id=$1 WHERE user_id = $2`, [id2, id1], (err, results) => {
+                    pool.query(`SELECT * FROM users`, function(err, results) {
                             if (err)
-                                res.send(400);
-                            pool.query(`UPDATE friends SET friend_id=$1 WHERE friend_id=$2`, [id2, id1], (err, results) => {
-                                if (err)
-                                    res.send(400);
-                                pool.query(`UPDATE buissness SET user_id = $1 WHERE user_id = $2`, [id2, id1], (err, results) => {
-                                    if (err)
-                                        res.send(400);
-                                    pool.query(`UPDATE buissness SET colleague_id = $1 WHERE colleague_id = $2`, [id2, id1], (err, results) => {
-                                        if (err)
-                                            res.send(400);
-                                        pool.query(`UPDATE relatives SET user_id = $1 WHERE user_id = $2`, [id2, id1], (err, results) => {
-                                            if (err)
-                                                res.send(400);
-                                            pool.query(`UPDATE relatives SET relative_id=$1 WHERE relative_id=$2`, [id2, id1], (err, results) => {
-                                                if (err)
-                                                    res.send(400);
-                                                return res.redirect('/');
-                                            })
-                                        })
-                                    })
-                                })
-                            })
+                                return res.send(400);
+                            users = [];
+                            var json = { users: [] };
+                            for (var i = 0; i < results.rows.length; i++) {
+                                json.users.push(results.rows[i]);
+                                users.push(results.rows[i]);
+                            }
+                            var result = JSON.stringify(json);
+                            return res.send(result);
                         })
-                        // return res.redirect('/');
+                        // return res.send(200);
                 }
             );
         }
     )
 })
+app.post('/users/info', function(req, res) {
+    users = [];
+    pool.query(`SELECT * FROM users`, function(err, results) {
+        if (err)
+            res.send(400);
+
+        for (var i = 0; i < results.rows.length; i++) {
+            users.push(results.rows[i]);
+        }
+        var result = JSON.stringify(users);
+        return res.send(result);
+
+    })
+})
 app.post('/users/remove', function(req, res) {
         var usertype = req.body.type;
         console.log(usertype);
         if (usertype == 'friend') {
-            var user_id = req.body.user_id;
-            var friend_id = req.body.id;
-            pool.query(`DELETE FROM friends WHERE user_id = $1 AND friend_id = $2`, [user_id, friend_id], (err, results) => {
-                if (err)
-                    return res.send(400);
-                return res.send(200);
-            })
+            usertype = 0;
         } else if (usertype == 'buissness') {
-            var user_id = req.body.user_id;
-            var colleague_id = req.body.id;
-            console.log(user_id + ' ' + colleague_id);
-            pool.query(`DELETE FROM buissness WHERE user_id = $1 AND colleague_id = $2`, [user_id, colleague_id], (err, results) => {
-                if (err)
-                    return res.send(400);
-                return res.send(200);
-            })
+            usertype = 1;
         } else {
-            var user_id = req.body.user_id;
-            var relative_id = req.body.id;
-            pool.query(`DELETE FROM relatives WHERE user_id = $1 AND relative_id = $2`, [user_id, relative_id], (err, results) => {
-                if (err)
-                    return res.send(400);
-                return res.send(200);
-            })
+            usertype = 2;
         }
+        var user_id = req.body.user_id1;
+        var friend_id = req.body.user_id2;
+        console.log(user_id + ' ' + friend_id + ' ' + usertype);
+        pool.query(`DELETE FROM relations WHERE user_id1 = $1 AND user_id2 = $2 AND type = $3`, [user_id, friend_id, usertype], (err, results) => {
+            if (err)
+                return res.send(400);
+            return res.send(200);
+        })
+
     })
     // app.post('/users/profile', function(req, res) {
     //     result = req.body.profiledata.split('$');
@@ -320,40 +298,18 @@ app.post('/users/addcontact', function(req, res) {
             var user_id = req.body.id;
             var friend = results.rows[0];
             console.log(friend)
-            var friend_id = friend.email + '$' + friend.name + '$' + friend.image;
+            var friend_id = friend.id;
             var type = req.body.type;
             var table_name = 'friends';
             var other_id = 'friend_id';
-            if (type == "friend") {
-                table_name = "friends";
-                other_id = "friend_id";
-                pool.query(`INSERT INTO friends (user_id, friend_id) VALUES (($1), ($2))`, [user_id, friend_id], function(err, results) {
-                    // console.log(err.message);
-                    if (err)
-                        return res.send(400);
-                    var json = { id: 'abcd' };
-                    json.id = friend_id;
-                    var jsonid = JSON.stringify(json);
-                    console.log(jsonid);
-                    return res.send(jsonid);
-                })
-            } else if (type == "buissness") {
-                table_name = "buissness";
-                other_id = "colleague_id";
-                pool.query(`INSERT INTO buissness (user_id, colleague_id) VALUES (($1), ($2))`, [user_id, friend_id], function(err, results) {
-                    // console.log(err.message);
-                    if (err)
-                        return res.send(400);
-                    var json = { id: 'abcd' };
-                    json.id = friend_id;
-                    var jsonid = JSON.stringify(json);
-                    console.log(jsonid);
-                    return res.send(jsonid);
-                })
-            } else {
-                table_name = "relatives";
-                other_id = "relative_id";
-                pool.query(`INSERT INTO relatives (user_id, relative_id) VALUES (($1), ($2))`, [user_id, friend_id], function(err, results) {
+            if (type == 'friend')
+                type = 0;
+            else if (type == 'buissness')
+                type = 1;
+            else
+                type = 2;
+            if (true) {
+                pool.query(`INSERT INTO relations (user_id1, user_id2, type) VALUES (($1), ($2), ($3))`, [user_id, friend_id, type], function(err, results) {
                     // console.log(err.message);
                     if (err)
                         return res.send(400);
@@ -377,7 +333,7 @@ io.sockets.on('connection', function(socket) {
         console.log(presentuser)
         for (i = 0; i < presentuser.length; i++) {
             console.log(data + ' ' + presentuser[i])
-            if (data == presentuser[i].split('$')[0]) {
+            if (data == presentuser[i]) {
                 return callback(false);
             }
         }
@@ -388,14 +344,25 @@ io.sockets.on('connection', function(socket) {
             var result = users.filter(function(chain) {
                 return chain.email === data
             })[0];
-            socket.username += '$' + result.name + '$' + result.image;
-            console.log(result.name);
+            // socket.username += '$' + result.name + '$' + result.image;
+            // console.log(result.name);
             currentuser = socket.username;
             // console.log(socket.name);
             userlist[socket.username] = socket;
+            // io.sockets.emit('update user')
             updateUserList();
         }
     });
+    socket.on('update user', function(callback) {
+        console.log('update user');
+        var json = { users: [] };
+        for (var i = 0; i < users.length; i++) {
+            json.users.push(users[i]);
+        }
+        var result = JSON.stringify(json);
+        io.sockets.emit('user', result);
+        callback(true);
+    })
 
     function updateUserList() {
         io.sockets.emit('users', Object.keys(userlist));

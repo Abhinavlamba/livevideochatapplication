@@ -15,13 +15,15 @@ $(document).ready(function() {
     var $list = $("#list");
     var $listWrap = $("#listWrap");
     var self;
-    var friend = [];
-    var buissnes = [];
-    var relative = [];
+    // var friend = [];
+    // var buissnes = [];
+    // var relative = [];
+    var relations = [];
     var listfriend = [];
     var listbuissness = [];
     var listrelatives = [];
     var onlineusers = [];
+    var users = [];
     var usertype = "buissness";
     $loginForm.on('submit', function(e) {
         e.preventDefault();
@@ -33,23 +35,20 @@ $(document).ready(function() {
                 password: $password.val()
             },
             success: function(result) {
-                console.log(result)
+                // console.log(result);
                 var json = JSON.parse(result);
-                for (var i = 0; i < json.friends.length; i++) {
-                    friend.push(json.friends[i]);
+                for (var i = 0; i < json.relations.length; i++) {
+                    relations.push(json.relations[i]);
                 }
-                for (var i = 0; i < json.buissness.length; i++) {
-                    buissnes.push(json.buissness[i]);
+                for (var i = 0; i < json.users.length; i++) {
+                    users.push(json.users[i]);
                 }
-                for (var i = 0; i < json.relatives.length; i++) {
-                    relative.push(json.relatives[i]);
-                }
-
                 $newUser = $username.val();
                 self = $newUser;
                 console.log('want to connect as ' + $newUser);
                 if ($newUser != '') {
                     $(this).disabled = true;
+                    // console.log('here1');
                     socket.emit('new user', $newUser, function(data) {
                         // location.href = "/";
                         if (data) {
@@ -76,15 +75,38 @@ $(document).ready(function() {
             }
         });
     });
-    // $chatForm.on('submit', function(e) {
-    //     e.preventDefault();
-    //     var msg = $('#message').val();
-    //     if (msg != '')
-    //         socket.emit('new message', msg);
-    //     $('#message').val('');
-    // });
-    socket.on('users', function(data) {
+    $("#updateform").on('submit', function(e) {
+        e.preventDefault();
+        var user = users.filter(e => e.email === self)[0];
+        console.log(user);
+        var formData = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: "/users/update",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(result) {
+                socket.emit('update user', function() {
+                    console.log('update user');
+                    location.href = '/';
+                })
+            },
+            error: function(e) {
+                alert('This user already exists.');
+            }
+        })
+    })
+    socket.on('user', function(data) {
         console.log(data);
+        data = JSON.parse(data);
+        users = [];
+        for (var i = 0; i < data.users.length; i++) {
+            users.push(data.users[i]);
+        }
+    })
+    socket.on('users', function(data) {
+        // console.log(data);
         listfriend = [];
         listbuissness = [];
         listrelatives = [];
@@ -97,14 +119,19 @@ $(document).ready(function() {
         function handler() { alert('Jai Mata Di'); }
         for (i = 0; i < data.length; i++) {
             // console.log(data[i])
-            var json = { id: data[i] };
+            var json = { email: data[i] };
             onlineusers.push(json);
-            var result = data[i].split('$');
-            var email = result[0];
-            var name = result[1];
-            var profile = result[2];
-            if (self == email || self == data[i]) {
-                self = data[i];
+            var result = data[i];
+            result = users.filter(function(e) {
+                return e.email === data[i]
+            })[0]
+            console.log(result);
+            var email = result.email;
+            var name = result.name;
+            // console.log(name);
+            var profile = result.image;
+            if (self == email) {
+                // self = data[i];
                 image = profile;
                 var name4 = name;
                 name4 = name4.replace(/-/g, ' ');
@@ -123,32 +150,30 @@ $(document).ready(function() {
             // $('#userList').append('</ul>');
             // $('#userList').append('</div>');
             var name2 = name;
+            // console.log(name);
             name2 = name2.replace(/-/g, ' ');
             $('#userList').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button></div></div>');
             // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
 
-        }
-        // console.log(image);
-        // ($name).html('Profile');
-        // for (i = 0; i < data.length; i++) {
-        // }
-        for (var i = 0; i < data.length; i++) {
-            for (var j = 0; j < friend.length; j++) {
-                if (friend[j].user_id == self && friend[j].friend_id == data[i]) {
-                    listfriend.push(friend[j].friend_id);
-                }
-            }
-            for (var j = 0; j < buissnes.length; j++) {
-                if (buissnes[j].user_id == self && buissnes[j].colleague_id == data[i]) {
-                    listbuissness.push(buissnes[j].colleague_id);
-                }
-            }
-            for (var j = 0; j < relative.length; j++) {
-                if (relative[j].user_id == self && relative[j].relative_id == data[i]) {
-                    listrelatives.push(relative[j].relative_id);
+            var user1, user2;
+            user1 = users.filter(e => e.email === self)[0];
+            user2 = users.filter(e => e.email === data[i])[0];
+            for (var j = 0; j < relations.length; j++) {
+                console.log(relations[j]);
+                console.log(user1);
+                console.log(user2);
+                if (relations[j].user_id1 == user1.id && relations[j].user_id2 == user2.id) {
+                    if (relations[j].type == 0)
+                        listfriend.push(user2);
+                    else if (relations[j].type == 1)
+                        listbuissness.push(user2);
+                    else
+                        listrelatives.push(user2);
                 }
             }
         }
+        console.log(listbuissness);
+
     });
     socket.on('message', function(data) {
         $('#chatScroll>ul').prepend('<li><b>' + data.name + ': </b>' + data.msg + '</li>');
@@ -191,12 +216,16 @@ $(document).ready(function() {
         $("#contacts").html("");
         for (i = 0; i < data.length; i++) {
             // console.log(data[i])
-            var result = data[i].split('$');
-            var email = result[0];
-            var name = result[1];
-            var profile = result[2];
-            if (self == email || self == data[i]) {
-                self = data[i];
+            var online = onlineusers.filter(e => e.email === data[i].email);
+            console.log(online);
+            if (online.length == 0)
+                continue;
+            var result = data[i];
+            var email = result.email;
+            var name = result.name;
+            var profile = result.image;
+            if (self == email) {
+                // self = data[i];
                 image = profile;
                 var name4 = name;
                 name4 = name4.replace(/-/g, ' ');
@@ -216,7 +245,7 @@ $(document).ready(function() {
             // $('#userList').append('</div>');
             var name2 = name;
             name2 = name2.replace(/-/g, ' ');
-            $('#contacts').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i] + '"> Video Call </button><div class="topcorner2"><img src = "../cross.png" class = "crossuser" id = "' + data[i] + '$' + usertype + '" style="height: 8px;width: 8px; -webkit-filter: invert(100%); filter: invert(100%);"></div></div></div>');
+            $('#contacts').append('<div id="food-table" class = "row"><div><img id = "userprofile" src = "./' + profile + '" class = "user image2"> </div><div class = "column1">       ' + name2 + '</div> <div class = "column">  ' + email + '</div><div class = "column"><button class="pickup-button" id = "' + data[i].email + '"> Video Call </button><div class="topcorner2"><img src = "../cross.png" class = "crossuser" id = "' + email + '$#' + '" style="height: 8px;width: 8px; -webkit-filter: invert(100%); filter: invert(100%);"></div></div></div>');
             // $('#userList').append('<div id = "food-table"><button class = "pickup-button">cancel </button> </div>');
         }
     })
@@ -225,35 +254,37 @@ $(document).ready(function() {
         // e.preventDefault();
         console.log('click');
         var id2 = $(this).attr('id');
-        console.log(id2);
-        var friend_id = id2.split('$');
+        // console.log(id2);
+        var friend_id = id2.split('$')[0];
         console.log(friend_id);
-        var id = friend_id[0] + '$' + friend_id[1] + '$' + friend_id[2];
-        console.log(id + ' ' + usertype);
+        var user1 = users.filter(e => e.email === self)[0];
+        var user2 = users.filter(e => e.email === friend_id)[0];
+        var id = user2.id;
+        // console.log(id + ' ' + usertype);
         $.ajax({
             type: "POST",
             url: "/users/remove",
             data: {
-                user_id: self,
-                id: id,
+                user_id1: user1.id,
+                user_id2: user2.id,
                 type: usertype
             },
             success: function(result) {
                 console.log(result)
                 if (usertype == 'friend') {
                     var json = { user_id: self, friend_id: id };
-                    listfriend = listfriend.filter(e => e !== id);
-                    friend = friend.filter(e => e != json);
+                    listfriend = listfriend.filter(e => e.id !== id);
+                    // friend = friend.filter(e => e !== json);
                     $("#friendslist").click();
                 } else if (usertype == 'buissness') {
-                    var json = { user_id: self, colleague_id: id };
-                    listbuissness = listbuissness.filter(e => e !== id);
-                    buissnes = buissnes.filter(e => e !== json);
+                    // var json = { user_id: self, colleague_id: id };
+                    listbuissness = listbuissness.filter(e => e.id !== id);
+                    // buissnes = buissnes.filter(e => e !== json);
                     $("#buissnesslist").click();
                 } else {
-                    var json = { user_id: self, relative_id: id };
-                    listrelatives = listrelatives.filter(e => e !== id);
-                    relative = relative.filter(e => e !== json);
+                    // var json = { user_id: self, relative_id: id };
+                    listrelatives = listrelatives.filter(e => e.id !== id);
+                    // relative = relative.filter(e => e !== json);
                     $("#relativeslist").click();
                 }
 
@@ -265,6 +296,7 @@ $(document).ready(function() {
     })
     $("#contactform").on('submit', function(e) {
         e.preventDefault();
+        var user = users.filter(e => e.email === self)[0];
         $.ajax({
             type: "POST",
             url: "/users/addcontact",
@@ -272,30 +304,24 @@ $(document).ready(function() {
                 name: $("#contactname").val(),
                 email: $("#contactemail").val(),
                 type: $("#type").val(),
-                id: self
+                id: user.id
             },
             success: function(result) {
                 console.log(result)
                 var json = JSON.parse(result);
                 var type = $("#type").val();
                 var id = json.id;
-                console.log({ user_id: self, friend_id: id });
-                if (type == 'friend') {
-                    friend.push({ user_id: self, friend_id: id });
-                } else if (type == 'buissness') {
-                    buissnes.push({ user_id: self, colleague_id: id });
-                } else {
-                    relative.push({ user_id: self, relative_id: id });
-                }
+                var user2 = users.filter(e => e.id === id)[0];
+                console.log(user2);
                 for (var i = 0; i < onlineusers.length; i++) {
-                    var id2 = onlineusers[i].id;
-                    if (id2 == id) {
+                    var onlineemail = onlineusers[i].email;
+                    if (onlineemail == user2.email) {
                         if (type == 'friend')
-                            listfriend.push(onlineusers[i].id);
+                            listfriend.push(user2);
                         else if (type == 'buissness')
-                            listbuissness.push(onlineusers[i].id);
+                            listbuissness.push(user2);
                         else
-                            listrelatives.push(onlineusers[i].id);
+                            listrelatives.push(user2);
                     }
                 }
                 $("#addcontact").slideUp();
@@ -384,12 +410,15 @@ $(document).ready(function() {
             type: "POST",
             url: "/profile",
             data: {
-                email: (self.split('$')[0])
+                email: self
             },
             success: function(result) {
-                $("#prevemail").val(self.split('$')[0]);
-                $("#prevname").val(self.split('$')[1]);
-                $("#previmage").val(self.split('$')[2]);
+                console.log('profile hain');
+                var user = users.filter(e => e.email === self)[0];
+                $("#prevemail").val(user.email);
+                $("#prevname").val(user.name);
+                $("#previmage").val(user.image);
+                $("#previd").val(user.id);
                 $("#updateprofile").slideDown();
                 $profile.slideUp();
                 $("#cover").fadeIn();
@@ -415,6 +444,7 @@ $(document).ready(function() {
                 console.log('Call request from ' + self + ' to ' + remoteUser);
                 $('#video-chat').slideDown();
                 $('#cover').fadeIn();
+                console.log(self + ' ' + remoteUser);
                 socket.emit('newVideoChatRequest', { sender: self, receiver: remoteUser }, function(data) {
                     $('#remoteUser').val('');
                     if (data.response) {
@@ -507,7 +537,8 @@ $(document).ready(function() {
         if (!isStarted) {
             $div = $('.callRequest');
             remoteUser = data.from;
-            $div.find('#caller').text('Username : ' + remoteUser.split('$')[1] + ' Email : ' + remoteUser.split('$')[0]);
+            var caller = users.filter(e => e.email === remoteUser)[0];
+            $div.find('#caller').text('Username : ' + caller.name + ' Email : ' + caller.email);
             $div.slideDown();
             $('#cover').fadeIn();
             $div.on('click', '.green', function() {
