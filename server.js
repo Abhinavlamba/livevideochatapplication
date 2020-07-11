@@ -269,7 +269,15 @@ app.post('/users/remove', function(req, res) {
         pool.query(`DELETE FROM relations WHERE user_id1 = $1 AND user_id2 = $2 AND type = $3`, [user_id, friend_id, usertype], (err, results) => {
             if (err)
                 return res.send(400);
-            return res.send(200);
+            pool.query(`SELECT * FROM relations`, function(err, results) {
+                var json = { relations: [] }
+                for (var i = 0; i < results.rows.length; i++) {
+                    json.relations.push(results.rows[i]);
+                }
+                var result = JSON.stringify(json);
+                // io.sockets.emit('update relations', result);
+                return res.send(result);
+            })
         })
 
     })
@@ -313,8 +321,9 @@ app.post('/users/addcontact', function(req, res) {
                     // console.log(err.message);
                     if (err)
                         return res.send(400);
-                    var json = { id: 'abcd' };
+                    var json = { id: 'abcd', type: 0 };
                     json.id = friend_id;
+                    json.type = type;
                     var jsonid = JSON.stringify(json);
                     console.log(jsonid);
                     return res.send(jsonid);

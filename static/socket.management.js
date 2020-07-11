@@ -40,6 +40,7 @@ $(document).ready(function() {
                 for (var i = 0; i < json.relations.length; i++) {
                     relations.push(json.relations[i]);
                 }
+                console.log(relations);
                 for (var i = 0; i < json.users.length; i++) {
                     users.push(json.users[i]);
                 }
@@ -123,9 +124,9 @@ $(document).ready(function() {
             onlineusers.push(json);
             var result = data[i];
             result = users.filter(function(e) {
-                return e.email === data[i]
-            })[0]
-            console.log(result);
+                    return e.email === data[i]
+                })[0]
+                // console.log(result);
             var email = result.email;
             var name = result.name;
             // console.log(name);
@@ -159,9 +160,9 @@ $(document).ready(function() {
             user1 = users.filter(e => e.email === self)[0];
             user2 = users.filter(e => e.email === data[i])[0];
             for (var j = 0; j < relations.length; j++) {
-                console.log(relations[j]);
-                console.log(user1);
-                console.log(user2);
+                // console.log(relations[j]);
+                // console.log(user1);
+                // console.log(user2);
                 if (relations[j].user_id1 == user1.id && relations[j].user_id2 == user2.id) {
                     if (relations[j].type == 0)
                         listfriend.push(user2);
@@ -172,9 +173,21 @@ $(document).ready(function() {
                 }
             }
         }
+        console.log('b');
         console.log(listbuissness);
+        console.log('f');
+        console.log(listfriend);
+        console.log('r');
+        console.log(listrelatives);
 
     });
+    socket.on('update relations', function(data) {
+        relations = [];
+        data = JSON.parse(data);
+        for (var i = 0; i < data.relations.length; i++) {
+            relations.push(data.relations[i]);
+        }
+    })
     socket.on('message', function(data) {
         $('#chatScroll>ul').prepend('<li><b>' + data.name + ': </b>' + data.msg + '</li>');
     });
@@ -271,6 +284,11 @@ $(document).ready(function() {
             },
             success: function(result) {
                 console.log(result)
+                result = JSON.parse(result);
+                relations = [];
+                for (var i = 0; i < result.relations.length; i++) {
+                    relations.push(result.relations[i]);
+                }
                 if (usertype == 'friend') {
                     var json = { user_id: self, friend_id: id };
                     listfriend = listfriend.filter(e => e.id !== id);
@@ -309,6 +327,7 @@ $(document).ready(function() {
             success: function(result) {
                 console.log(result)
                 var json = JSON.parse(result);
+                relations.push({ user_id1: user.id, user_id2: json.id, type: json.type });
                 var type = $("#type").val();
                 var id = json.id;
                 var user2 = users.filter(e => e.id === id)[0];
