@@ -16,6 +16,8 @@ $(document).ready(function () {
   var $list = $("#list");
   var $listWrap = $("#listWrap");
   var self;
+  var datasaver = document.getElementById('datasaver');
+  console.log(datasaver);
   // var friend = [];
   // var buissnes = [];
   // var relative = [];
@@ -405,9 +407,16 @@ $(document).ready(function () {
       }
     };
     pc.createOffer(function (offerSDP) {
+      // console.log('Datasaver checked value',datasaver, datasaver.checked);
+      if (datasaver.checked) {
+        // alert("Offer has been created with dataSaver enabled");
+        console.log("Offer has been created with dataSaver enabled");
+        offerSDP.sdp = handle_offer_sdp(offerSDP); //invoke function saving the new sdp
+      }
       pc.setLocalDescription(offerSDP);
       console.log('Creating offer to remote user ' + remoteUser);
-      socket.emit('offersdp', { targetUser: remoteUser, offerSDP: offerSDP });
+      socket.emit('offersdp', { targetUser: remoteUser, offerSDP: offerSDP, datasaver: datasaver.checked });
+      // console.log(datasaver,datasaver.value);
     }, onfailure, sdpConstraints);
 
     function onfailure(e) {
@@ -475,7 +484,9 @@ $(document).ready(function () {
             $('#callStatus').html('Call accepted. Initiating video call now. Please, Allow Media Access to continue.');
             $('#video-chat').children('h3').css('background-color', '#99CC00');
             if (navigator.getUserMedia) {
-              navigator.getUserMedia({ video: true, audio: true }, callerSuccess, errorCallback);
+              navigator.getUserMedia({ video: {
+                facingMode: 'user'}
+              , audio: true }, callerSuccess, errorCallback);
             } else
               $('#callStatus').html('Your browser does not support getUserMedia. Please update your broswer to use this app.');
             isStarted = true;
@@ -547,16 +558,22 @@ $(document).ready(function () {
   //Code for answerer!!
 
 
-  function createAnswer(offerSDP) {
+  function createAnswer(offerSDP,datasaver) {
 
     //first set remote descriptions based on offerSDP
+    
     var remoteDescription = new RTCSessionDescription(offerSDP);
     pc.setRemoteDescription(remoteDescription);
     pc.createAnswer(function (answerSDP) {
+      console.log('Creating answer with datasaver = ',datasaver);
+      if (datasaver) {
+        // alert('Answer has been created with datasaver enabled');
+        console.log('Answer has been created with datasaver enabled');
+        answerSDP.sdp = handle_offer_sdp(answerSDP); //invoke function saving the new sdp
+      }
       pc.setLocalDescription(answerSDP);
       socket.emit('answersdp', { targetUser: remoteUser, answerSDP: answerSDP });
     }, function (e) { alert('something wrong happened :' + e); }, sdpConstraints);
-    
   };
   let newVideoCallRequestCallback;
   $div = $('.callRequest');
@@ -568,7 +585,7 @@ $(document).ready(function () {
     $('#video-chat').children('h3').css('background-color', '#99CC00');
     $('#callStatus').html('Call accepted. Initiating video call now. Please, allow Media Access when asked for.');
     console.log("Going to acuqire user Media");
-    navigator.getUserMedia({ video: true, audio: true }, answererSuccess, errorCallback);
+    navigator.getUserMedia({ video: {    facingMode: 'user'  }, audio: true }, answererSuccess, errorCallback);
 
     function answererSuccess(mediaStream) {
       localStream = mediaStream;
@@ -618,7 +635,7 @@ $(document).ready(function () {
     console.log(self + ':: offer received. target user is ' + data.targetUser);
     if (data.targetUser == self && data.offerSDP) {
       console.log('Receiver reaches here. Not the offerer.');
-      createAnswer(data.offerSDP);
+      createAnswer(data.offerSDP,data.datasaver);
     }
   });
   socket.on('answersdp', function (data) {
@@ -628,4 +645,34 @@ $(document).ready(function () {
       pc.setRemoteDescription(remoteDescription);
     }
   });
+  
+function handle_offer_sdp(offer) {
+    let sdp = offer.sdp.split('\r\n');//convert to an concatenable array
+    let new_sdp = '';
+    let position = null;
+    sdp = sdp.slice(0, -1); //remove the last comma ','
+    for(let i = 0; i < sdp.length; i++) {//look if exists already a b=AS:XXX line
+        if(sdp[i].match(/b=AS:/)) {
+            position = i; //mark the position
+        }
+    }
+    if(position) {
+        sdp.splice(position, 1);//remove if exists
+    }
+    for(let i = 0; i < sdp.length; i++) {
+        if(sdp[i].match(/m=video/)) {//modify and add the new lines for video
+            new_sdp += sdp[i] + '\r\n' + 'b=AS:' + '128' + '\r\n';
+        }
+        else {
+            if(sdp[i].match(/m=audio/)) { //modify and add the new lines for audio
+                new_sdp += sdp[i] + '\r\n' + 'b=AS:' + 64 + '\r\n';
+            }
+            else {
+                new_sdp += sdp[i] + '\r\n';
+            }
+        }
+    }
+    return new_sdp; //return the new sdp
+}
+  
 });
